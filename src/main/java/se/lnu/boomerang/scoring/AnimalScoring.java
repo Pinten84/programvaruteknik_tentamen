@@ -28,19 +28,7 @@ public class AnimalScoring implements ScoringStrategy {
         for (int i = 0; i < animals.length; i++) {
             String animal = animals[i];
             int count = counts.getOrDefault(animal, 0);
-            // Pairs score points.
-            // Original code: "if(frequency == 2)" -> implies ONLY pairs count?
-            // Rule analysis: "Only PAIRS count!"
-            // Example: 4 Emus -> 8 points (two pairs).
-            // Original code logic: checks frequency == 2. What if 4?
-            // Original code loop: `numberThings` counts total. `if (frequency == 2)`...
-            // Wait, original code ONLY checks `frequency == 2`. It does NOT handle 4.
-            // But the rule analysis says "4 Emus -> 8 points (two pairs)".
-            // I should implement the RULE correctly, even if original code was buggy,
-            // OR follow original code if the goal is strict parity.
-            // The prompt says "solve the exam to get full points". Fixing bugs is part of
-            // that.
-            // I will implement proper pair counting: (count / 2) * points.
+                // Count pairs for each animal and calculate score accordingly.
 
             int pairs = count / 2;
             if (pairs > 0) {
