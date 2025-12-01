@@ -1,0 +1,15 @@
+se\lnu\boomerang\Main.class
+se\lnu\boomerang\model\Card.class
+se\lnu\boomerang\scoring\CollectionScoring.class
+se\lnu\boomerang\model\Deck.class
+se\lnu\boomerang\scoring\ThrowCatchScoring.class
+se\lnu\boomerang\game\ConsoleController.class
+se\lnu\boomerang\game\NetworkPlayerController.class
+se\lnu\boomerang\scoring\AnimalScoring.class
+se\lnu\boomerang\scoring\ActivityScoring.class
+se\lnu\boomerang\game\PlayerController.class
+se\lnu\boomerang\scoring\TouristSiteScoring.class
+se\lnu\boomerang\game\BotController.class
+se\lnu\boomerang\game\Game.class
+se\lnu\boomerang\model\Player.class
+se\lnu\boomerang\scoring\ScoringStrategy.class
