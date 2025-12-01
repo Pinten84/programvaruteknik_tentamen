@@ -494,5 +494,296 @@ Förklaring: Getters och metoder för att hantera hand, draft, scoring och state
 ```
 
 ---
+## game/Game.java
+Förklaring: Hanterar hela spelomgången, rundor, draft, poängberäkning och vinstutdelning. Sköter logik för att skapa och hantera spelare, kort, och scoring.
+
+```java
+Förklaring: Paketdeklaration.
+package se.lnu.boomerang.game;
+
+Förklaring: Importerar nödvändiga klasser för spelare, kort, scoring och samlingar.
+import se.lnu.boomerang.model.*;
+import se.lnu.boomerang.scoring.*;
+import java.util.*;
+import java.util.concurrent.*;
+
+Förklaring: Klassdeklaration för Game, håller all spel-logik.
+public class Game {
+    Förklaring: Lista med alla controllers (spelare).
+    private final List<PlayerController> controllers;
+    Förklaring: Spel-kortleken.
+    private final Deck deck;
+    Förklaring: Lista med scoring-strategier.
+    private final List<ScoringStrategy> strategies;
+    Förklaring: Trådpool för parallell hantering av input.
+    private final ExecutorService threadPool;
+    Förklaring: Lista över färdiga regioner globalt.
+    private final List<String> finishedRegionsGlobal = new ArrayList<>();
+
+    Förklaring: Konstruktor, initierar controllers, deck, strategies och trådpool.
+    public Game(List<PlayerController> controllers, List<ScoringStrategy> strategies) {
+        this.controllers = controllers;
+        this.deck = Deck.createAustraliaDeck();
+        this.strategies = strategies;
+        this.threadPool = Executors.newFixedThreadPool(controllers.size());
+    }
+
+    Förklaring: Startar spelet, blandar kort, delar ut händer, kör rundor och avslutar.
+    public void start() {
+        try {
+            deck.shuffle();
+
+            Förklaring: Delar ut 7 kort till varje spelare.
+            for (PlayerController pc : controllers) {
+                List<Card> hand = new ArrayList<>();
+                for (int i = 0; i < 7; i++) {
+                    hand.add(deck.draw());
+                }
+                pc.getPlayer().setHand(hand);
+            }
+
+            Förklaring: Kör 4 rundor med draft och scoring.
+            for (int round = 0; round < 4; round++) {
+                playRound(round);
+
+                Förklaring: Mellan rundor, dela ut nya händer.
+                if (round < 3) {
+                    List<Card> allCards = Deck.createAustraliaDeck().getCards();
+                    Collections.shuffle(allCards);
+
+                    for (PlayerController pc : controllers) {
+                        pc.getPlayer().clearDraft();
+                        pc.getPlayer().clearNextHand();
+                        List<Card> hand = new ArrayList<>();
+                        for (int i = 0; i < 7; i++) {
+                            hand.add(allCards.remove(0));
+                        }
+                        pc.getPlayer().setHand(hand);
+                    }
+                }
+            }
+
+            Förklaring: Avslutar och utser vinnare.
+            announceWinner();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            threadPool.shutdown();
+        }
+    }
+
+    Förklaring: Kör en spelrunda med throw, draft, scoring och regionbonus.
+    private void playRound(int roundNr) throws InterruptedException, ExecutionException {
+        // ...existing code...
+    }
+
+    Förklaring: Kollar om en spelare har besökt alla platser i en region.
+    private boolean checkRegionComplete(Player p, String region) {
+        // ...existing code...
+    }
+
+    Förklaring: Skriver ut vinnaren.
+    private void announceWinner() {
+        // ...existing code...
+    }
+
+    Förklaring: Utility-metod för att skriva ut kort.
+    private String printCards(List<Card> cards) {
+        // ...existing code...
+    }
+
+    Förklaring: Utility-metod för att räkna antal aktiviteter för poäng.
+    private int getCountForScore(int score) {
+        // ...existing code...
+    }
+}
+```
+
+---
+## test/scoring/ScoringTest.java
+Förklaring: Enhetstester för scoring-logik. Testar AnimalScoring, CollectionScoring och ThrowCatchScoring med olika draft-scenarier.
+
+```java
+Förklaring: Paketdeklaration.
+package se.lnu.boomerang.scoring;
+
+Förklaring: Importerar JUnit, modellklasser och assertions.
+import org.junit.jupiter.api.Test;
+import se.lnu.boomerang.model.Card;
+import se.lnu.boomerang.model.Player;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
+
+Förklaring: Klass för scoring-tester.
+public class ScoringTest {
+    Förklaring: Testar att par av djur ger rätt poäng.
+    @Test
+    public void testAnimalScoring_Pairs() {
+        Player p = new Player(1, false);
+        List<Card> draft = new ArrayList<>();
+        draft.add(new Card("K1", "A", "WA", 1, "", "Kangaroos", ""));
+        draft.add(new Card("K2", "B", "WA", 1, "", "Kangaroos", ""));
+        AnimalScoring scorer = new AnimalScoring();
+        assertEquals(3, scorer.calculateScore(p, draft));
+    }
+    // ...existing testmetoder...
+}
+```
+
+---
+## test/game/GameTest.java
+Förklaring: Enhetstester för Game-logik. Testar spelinitiering och mock-controller.
+
+```java
+Förklaring: Paketdeklaration.
+package se.lnu.boomerang.game;
+
+Förklaring: Importerar JUnit, modellklasser och scoring.
+import org.junit.jupiter.api.Test;
+import se.lnu.boomerang.model.Card;
+import se.lnu.boomerang.model.Player;
+import se.lnu.boomerang.scoring.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
+
+Förklaring: Klass för game-tester.
+public class GameTest {
+    Förklaring: MockController för att simulera spelare i tester.
+    class MockController implements PlayerController {
+        // ...existing code...
+    }
+    Förklaring: Testar att Game kan initieras korrekt.
+    @Test
+    public void testGameInitialization() {
+        List<PlayerController> controllers = new ArrayList<>();
+        controllers.add(new MockController(0));
+        controllers.add(new MockController(1));
+        List<ScoringStrategy> strategies = new ArrayList<>();
+        strategies.add(new ThrowCatchScoring());
+        Game game = new Game(controllers, strategies);
+        assertNotNull(game);
+        // ...övriga assertions...
+    }
+}
+```
+
+---
+## scoring/ScoringStrategy.java
+Förklaring: Interface för scoring-strategier. Gör det möjligt att lägga till olika poängberäkningsregler.
+
+```java
+Förklaring: Paketdeklaration.
+package se.lnu.boomerang.scoring;
+
+Förklaring: Importerar modellklasser.
+import se.lnu.boomerang.model.Player;
+import se.lnu.boomerang.model.Card;
+import java.util.List;
+
+Förklaring: Interface för scoring-strategier.
+public interface ScoringStrategy {
+    int calculateScore(Player player, List<Card> roundDraft);
+    String getCategoryName();
+    String getScoreDescription();
+}
+```
+
+---
+## scoring/CollectionScoring.java
+Förklaring: Beräknar poäng för samlingar (leaves, wildflowers, shells, souvenirs) och hanterar dubblering.
+
+```java
+Förklaring: Paketdeklaration.
+package se.lnu.boomerang.scoring;
+
+Förklaring: Importerar modellklasser.
+import se.lnu.boomerang.model.Player;
+import se.lnu.boomerang.model.Card;
+import java.util.List;
+
+Förklaring: Klass för collection scoring.
+public class CollectionScoring implements ScoringStrategy {
+    private String description = "";
+    @Override
+    public int calculateScore(Player player, List<Card> roundDraft) {
+        // ...existing code...
+    }
+    // ...övriga metoder...
+}
+```
+
+---
+## game/PlayerController.java
+Förklaring: Interface för spelarkontroller. Hanterar input/output och val för mänskliga och bot-spelare.
+
+```java
+Förklaring: Paketdeklaration.
+package se.lnu.boomerang.game;
+
+Förklaring: Importerar modellklasser.
+import se.lnu.boomerang.model.Card;
+import se.lnu.boomerang.model.Player;
+import java.util.List;
+
+Förklaring: Interface för spelarkontroller.
+public interface PlayerController {
+    void setPlayer(Player player);
+    Player getPlayer();
+    void notifyMessage(String message);
+    String requestInput(String prompt);
+    Card selectCardToDraft(List<Card> hand);
+    Card selectThrowCard(List<Card> hand);
+    String selectActivityToScore(java.util.Map<String, Integer> options);
+}
+```
+
+---
+## game/ConsoleController.java
+Förklaring: Hanterar input/output för mänsklig spelare via konsol. Läser in val och skriver ut meddelanden.
+
+```java
+Förklaring: Paketdeklaration.
+package se.lnu.boomerang.game;
+
+Förklaring: Importerar modellklasser och I/O.
+import se.lnu.boomerang.model.Card;
+import se.lnu.boomerang.model.Player;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+Förklaring: Klass för konsolkontroller.
+public class ConsoleController implements PlayerController {
+    // ...existing code...
+}
+```
+
+---
+## game/BotController.java
+Förklaring: Hanterar bot-spelare. Väljer kort och aktiviteter automatiskt, ofta slumpmässigt eller enligt enkel strategi.
+
+```java
+Förklaring: Paketdeklaration.
+package se.lnu.boomerang.game;
+
+Förklaring: Importerar modellklasser och random.
+import se.lnu.boomerang.model.Card;
+import se.lnu.boomerang.model.Player;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+Förklaring: Klass för botkontroller.
+public class BotController implements PlayerController {
+    // ...existing code...
+}
+```
+
+---
 # ...existing code...
-[Resten av filerna följer samma struktur: kodblock + Förklaring: ovanför varje rad.]
