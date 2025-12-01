@@ -16,16 +16,7 @@ public class TouristSiteScoring implements ScoringStrategy {
         for (Card card : roundDraft) {
             if (!visited.containsKey(card.getLetter())) {
                 newSites++;
-                // Note: We don't update the player state here, just calculate.
-                // The game loop should handle state updates to avoid side effects in
-                // calculation?
-                // Actually, for this simple game, updating here might be easier, but let's
-                // stick to calculation.
-                // Wait, if we don't update, we can't track it.
-                // Let's assume the Game loop calls a separate method to update state, OR we
-                // allow side effects here.
-                // Given the original code updates state during scoring, we will do the same but
-                // be careful.
+                    // Update visited sites for scoring.
                 player.addVisitedSite(card.getLetter(), card.getRegion());
             }
         }

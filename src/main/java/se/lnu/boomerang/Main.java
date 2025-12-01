@@ -63,13 +63,7 @@ public class Main {
         }
 
         // Remote players
-        // Host is 1 player. Bots are numBots.
-        // Remaining are remote players.
-        // Total players = numPlayers + numBots?
-        // Wait, args[0] is usually total human players?
-        // If args[0]=2, args[1]=0. Total 2 humans.
-        // Host + 1 Remote.
-        // So remotePlayers = numPlayers - 1.
+            // Calculate number of remote players based on input arguments.
 
         int remotePlayers = numPlayers - 1;
         if (remotePlayers > 0) {

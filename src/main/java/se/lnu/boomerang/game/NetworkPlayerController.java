@@ -39,7 +39,7 @@ public class NetworkPlayerController implements PlayerController {
 
     @Override
     public String requestInput(String prompt) {
-        // Send prompt and wait for response
+        // Send input request and wait for response
         // out.writeObject(prompt);
         // return (String) in.readObject();
         return "";
