@@ -12,12 +12,7 @@ public class ActivityScoring implements ScoringStrategy {
 
     @Override
     public int calculateScore(Player player, List<Card> roundDraft) {
-        // This method is tricky because it requires user input.
-        // In this design, we assume the Game loop has already asked the user
-        // and updated the player's state or we return 0 here and handle it separately.
-        // For the sake of the interface, we'll return 0 and let the Game loop handle
-        // the interactive part
-        // using the helper methods below.
+        // Returns 0; actual activity scoring handled in game loop.
         return 0;
     }
 
