@@ -6,9 +6,19 @@ Välkommen! Denna mapp innehåller allt du behöver för att förbereda dig för
 
 ## 📁 Innehåll
 
-### 🌟 NYA DOKUMENT (För Muntlig Examination)
+### 🌟 DOKUMENT (För Muntlig Examination)
 
-#### 1. **LASKLAR_DETTA_FORST.md** ⭐ START HÄR!
+#### 0. **0_MUNTLIG_EXAMINATION_MATERIAL_KLART.md** 📋 ÖVERSIKT
+- **Vad:** Sammanfattning av allt material
+- **Tid:** 5 minuter
+- **Syfte:** Snabb översikt över vad som skapats
+- **Innehåll:**
+  - Vad har skapats?
+  - Statistik
+  - Vad täcks?
+  - Hur du använder materialet
+
+#### 1. **1_LASKLAR_DETTA_FORST.md** ⭐ START HÄR!
 - **Vad:** Översikt och studieplan
 - **Tid:** 5 minuter
 - **Syfte:** Guidar dig genom hur du använder materialet
@@ -19,7 +29,7 @@ Välkommen! Denna mapp innehåller allt du behöver för att förbereda dig för
   - Top 10 viktigaste koncept
   - Tips för olika lärstilar
 
-#### 2. **muntlig_examination_guide.md** 📖 HUVUDDOKUMENT
+#### 2. **2_muntlig_examination_guide.md** 📖 HUVUDDOKUMENT
 - **Vad:** Omfattande guide som förklarar allt i enkla termer
 - **Tid:** 45 minuter
 - **Syfte:** Lära dig alla koncept från grunden
@@ -32,7 +42,21 @@ Välkommen! Denna mapp innehåller allt du behöver för att förbereda dig för
   - Vanliga fallgropar att undvika
   - Snabbreferens
 
-#### 3. **ovningsfragar_med_svar.md** 💪 ÖVNINGSMATERIAL
+#### 3. **3_visuell_guide.md** 📊 VISUELLT STÖD
+- **Vad:** Diagram och visuella representationer
+- **Tid:** 20 minuter
+- **Syfte:** Visuellt stöd för att förstå och förklara
+- **Innehåll:**
+  - Arkitektur-översikt (diagram)
+  - Jämförelse: Original vs Refaktorerad
+  - SOLID-principer visualiserade
+  - Designmönster visualiserade
+  - Kvalitetsattribut visualiserade
+  - Buggar visualiserade
+  - Koppling och kohesion diagram
+  - Snabb checklista
+
+#### 4. **4_ovningsfragar_med_svar.md** 💪 ÖVNINGSMATERIAL
 - **Vad:** 30+ övningsfrågor med detaljerade modellsvar
 - **Tid:** 60+ minuter (öva flera gånger)
 - **Syfte:** Aktiv övning för att förbereda dig
@@ -48,50 +72,24 @@ Välkommen! Denna mapp innehåller allt du behöver för att förbereda dig för
   - Del 9: Tekniska Detaljer (3 frågor)
   - Del 10: Reflektionsfrågor (2 frågor)
 
-#### 4. **visuell_guide.md** 📊 VISUELLT STÖD
-- **Vad:** Diagram och visuella representationer
-- **Tid:** 20 minuter
-- **Syfte:** Visuellt stöd för att förstå och förklara
-- **Innehåll:**
-  - Arkitektur-översikt (diagram)
-  - Jämförelse: Original vs Refaktorerad
-  - SOLID-principer visualiserade
-  - Designmönster visualiserade
-  - Kvalitetsattribut visualiserade
-  - Buggar visualiserade
-  - Koppling och kohesion diagram
-  - Snabb checklista
-
----
-
-### 📝 BEFINTLIGA DOKUMENT (Från tidigare)
-
-#### 5. **prep.md**
-- Tidigare förberedelsematerial
-- Kan användas som komplement
-
-#### 6. **prep_kod.md**
-- Tidigare kodförberedelse
-- Kan användas som komplement
-
 ---
 
 ## 🎯 Snabbstart
 
 ### Om du har 3 dagar:
-1. **Dag 1:** Läs LASKLAR_DETTA_FORST.md → muntlig_examination_guide.md → visuell_guide.md
-2. **Dag 2:** Öva med ovningsfragar_med_svar.md (alla 30+ frågor)
+1. **Dag 1:** Läs 1_LASKLAR_DETTA_FORST.md → 2_muntlig_examination_guide.md → 3_visuell_guide.md
+2. **Dag 2:** Öva med 4_ovningsfragar_med_svar.md (alla 30+ frågor)
 3. **Dag 3:** Repetera svaga områden, simulera examination
 
 ### Om du har 1 dag:
-1. **Morgon:** Läs muntlig_examination_guide.md (fokus på SOLID och Designmönster)
-2. **Eftermiddag:** Öva med ovningsfragar_med_svar.md (fokus på Del 1-5)
-3. **Kväll:** Läs Snabbreferens och titta på diagram i visuell_guide.md
+1. **Morgon:** Läs 2_muntlig_examination_guide.md (fokus på SOLID och Designmönster)
+2. **Eftermiddag:** Öva med 4_ovningsfragar_med_svar.md (fokus på Del 1-5)
+3. **Kväll:** Läs Snabbreferens och titta på diagram i 3_visuell_guide.md
 
 ### Om du har 2 timmar:
-1. Läs "Snabbreferens" i muntlig_examination_guide.md (10 min)
-2. Titta på diagram i visuell_guide.md (15 min)
-3. Öva på 10 frågor från ovningsfragar_med_svar.md (60 min)
+1. Läs "Snabbreferens" i 2_muntlig_examination_guide.md (10 min)
+2. Titta på diagram i 3_visuell_guide.md (15 min)
+3. Öva på 10 frågor från 4_ovningsfragar_med_svar.md (60 min)
 4. Läs "Tips för Examinationen" (10 min)
 5. Öppna din README.md och skumma igenom (5 min)
 
@@ -113,10 +111,11 @@ Välkommen! Denna mapp innehåller allt du behöver för att förbereda dig för
 
 ## ✅ Checklista: Har du läst allt?
 
-- [ ] LASKLAR_DETTA_FORST.md
-- [ ] muntlig_examination_guide.md
-- [ ] visuell_guide.md
-- [ ] ovningsfragar_med_svar.md (minst en gång)
+- [ ] 0_MUNTLIG_EXAMINATION_MATERIAL_KLART.md (översikt)
+- [ ] 1_LASKLAR_DETTA_FORST.md (studieplan)
+- [ ] 2_muntlig_examination_guide.md (teori)
+- [ ] 3_visuell_guide.md (diagram)
+- [ ] 4_ovningsfragar_med_svar.md (minst en gång)
 - [ ] Övat på minst 10 frågor HÖGT
 - [ ] Tittat på din egen kod (Game.java, AnimalScoring.java, etc.)
 - [ ] Kört `mvn test` och verifierat att alla tester passerar
