@@ -65,7 +65,7 @@ public class Deck {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            // Fallback to hardcoded if file fails (safety net for exam)
+                // Fallback to hardcoded deck if file fails.
             System.err.println("Failed to load CSV, using fallback deck.");
             return createAustraliaDeck();
         }

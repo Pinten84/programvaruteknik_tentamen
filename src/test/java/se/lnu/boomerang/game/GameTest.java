@@ -77,7 +77,91 @@ public class GameTest {
 
         Game game = new Game(controllers, strategies);
         assertNotNull(game);
-        // We can't easily test start() because it runs the full game loop.
-        // But we verified the constructor works.
+    }
+
+    @Test
+    public void testGameRequiresTwoToFourPlayers() {
+        List<ScoringStrategy> strategies = new ArrayList<>();
+        strategies.add(new ThrowCatchScoring());
+
+        // Test with 1 player (should fail)
+        List<PlayerController> onePlayer = new ArrayList<>();
+        onePlayer.add(new MockController(0));
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Game(onePlayer, strategies);
+        });
+
+        // Test with 5 players (should fail)
+        List<PlayerController> fivePlayers = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            fivePlayers.add(new MockController(i));
+        }
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Game(fivePlayers, strategies);
+        });
+
+        // Test with null (should fail)
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Game(null, strategies);
+        });
+    }
+
+    @Test
+    public void testGameRequiresScoringStrategies() {
+        List<PlayerController> controllers = new ArrayList<>();
+        controllers.add(new MockController(0));
+        controllers.add(new MockController(1));
+
+        // Test with null strategies
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Game(controllers, null);
+        });
+
+        // Test with empty strategies
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Game(controllers, new ArrayList<>());
+        });
+    }
+
+    @Test
+    public void testPlayerHandManagement() {
+        Player p = new Player(1, false);
+        
+        // Test adding cards to hand
+        List<Card> hand = new ArrayList<>();
+        hand.add(new Card("Site1", "A", "WA", 1, "", "", ""));
+        hand.add(new Card("Site2", "B", "WA", 2, "", "", ""));
+        p.setHand(hand);
+        
+        assertEquals(2, p.getHand().size());
+        
+        // Test removing card by letter
+        Card removed = p.removeCardFromHand("A");
+        assertNotNull(removed);
+        assertEquals("A", removed.getLetter());
+        assertEquals(1, p.getHand().size());
+        
+        // Test removing non-existent card
+        Card notFound = p.removeCardFromHand("Z");
+        assertNull(notFound);
+        assertEquals(1, p.getHand().size());
+    }
+
+    @Test
+    public void testDraftManagement() {
+        Player p = new Player(1, false);
+        
+        Card card1 = new Card("Site1", "A", "WA", 1, "", "", "");
+        Card card2 = new Card("Site2", "B", "WA", 2, "", "", "");
+        
+        p.addToDraft(card1);
+        p.addToDraft(card2);
+        
+        assertEquals(2, p.getDraft().size());
+        
+        p.clearDraft();
+        assertEquals(0, p.getDraft().size());
     }
 }

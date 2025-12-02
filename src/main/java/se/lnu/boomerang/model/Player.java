@@ -123,15 +123,30 @@ public class Player {
         this.regionRoundScore = 0;
     }
 
+    /**
+     * Removes a card from hand by letter.
+     * 
+     * @param letter The letter of the card to remove
+     * @return The removed card, or null if not found
+     */
     public Card removeCardFromHand(String letter) {
+        if (letter == null || letter.isEmpty()) {
+            return null;
+        }
         for (int i = 0; i < hand.size(); i++) {
             if (hand.get(i).getLetter().equalsIgnoreCase(letter)) {
                 return hand.remove(i);
             }
         }
-        return null;
+        return null; // Card not found - this is acceptable (player may have invalid input)
     }
 
+    /**
+     * Removes a card from hand by index.
+     * 
+     * @param index The index of the card to remove
+     * @return The removed card, or null if index is invalid
+     */
     public Card removeCardFromHand(int index) {
         if (index >= 0 && index < hand.size()) {
             return hand.remove(index);
