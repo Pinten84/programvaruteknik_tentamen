@@ -1,71 +1,45 @@
-# Lab 11.6.2: Challenge OSPF Configuration - Studyguide
+# Lab 11.6.2: Challenge OSPF Configuration - Studyguide för Muntlig Examination
 
-**Estimated Time:** 1 hour  
-**Topic:** OSPF Routing Configuration and Verification
-
----
-
-## Table of Contents
-1. [Introduction to OSPF](#introduction-to-ospf)
-2. [Task 9: OSPF Routing on Branch2](#task-9-ospf-routing-on-branch2)
-3. [Task 10: Verify the Configurations](#task-10-verify-the-configurations)
-4. [Task 11: Reflection](#task-11-reflection)
-5. [Key Takeaways](#key-takeaways)
-6. [Practice Questions](#practice-questions)
+**Beräknad tid:** 1 timme  
+**Ämne:** OSPF-routing konfiguration och verifiering
 
 ---
 
-## Introduction to OSPF
+## Inledning
 
-**OSPF (Open Shortest Path First)** is a link-state routing protocol used in IP networks. Key characteristics:
+Denna guide är utformad för att förbereda dig inför den muntliga examinationen av Lab 11.6.2. Här kommer du att få en grundlig genomgång av alla uppgifter med förklaringar som är lätta att förstå, även om du inte har arbetat med nätverk tidigare. Tanken är att du ska kunna förklara vad du gjort och varför, inte bara rabbla kommandon.
 
-- **Protocol Type:** Link-state (not distance-vector)
-- **Algorithm:** Dijkstra's Shortest Path First (SPF)
-- **Metric:** Cost (based on bandwidth)
-- **Administrative Distance:** 110
-- **Multicast Addresses:** 224.0.0.5 (all OSPF routers), 224.0.0.6 (DR/BDR)
+## Vad är OSPF egentligen?
 
-### Why OSPF?
-- Fast convergence
-- Scalable for large networks
-- Supports VLSM and CIDR
-- No hop count limitation (unlike RIP)
-- Hierarchical design using areas
+OSPF står för Open Shortest Path First, och är ett protokoll som hjälper routrar att kommunicera med varandra för att hitta de bästa vägarna att skicka data genom ett nätverk. Tänk dig ett vägnät där olika GPS-enheter pratar med varandra för att alltid veta vilka vägar som är snabbast och öppna. Om en väg stängs, kan alla GPS-enheter snabbt uppdatera sig och välja en alternativ rutt.
 
-### Network Topology Overview
-This lab uses three routers:
-- **HQ** - Headquarters router
-- **Branch1** - First branch office router
-- **Branch2** - Second branch office router
+OSPF är särskilt smart eftersom den inte bara räknar hur många "hopp" (routrar) ett paket måste gå genom, utan den tar också hänsyn till bandbredden på varje länk. En kortare väg med långsam anslutning kan vara sämre än en längre väg med snabb anslutning. OSPF använder Dijkstras algoritm (samma som många GPS-system använder) för att beräkna den kortaste vägen baserat på en kostnadsfunktion.
 
-All routers are connected in a partial mesh topology with OSPF Area 0 (backbone area).
+I denna labb har vi tre routrar: **HQ** (huvudkontoret), **Branch1** (filial 1) och **Branch2** (filial 2). Alla routrar är uppkopplade i vad vi kallar en "partial mesh-topologi", vilket betyder att inte alla routrar är direktanslutna till varandra, men det finns flera vägar mellan dem. Alla routrar ingår i OSPF Area 0, som kallas "backbone area" och är hjärtat i ett OSPF-nätverk.
 
 ---
 
-## Task 9: OSPF Routing on Branch2
+## Task 9: Konfigurera OSPF på Branch2
 
-### Objective
-Configure OSPF on the Branch2 router to advertise its directly connected networks.
+### Steget-för-steg genomgång
 
-### Step 1: Identify Connected Networks
+När vi konfigurerar OSPF på Branch2 måste vi först förstå vilka nätverk som routern är direkt ansluten till. Detta är viktigt eftersom vi bara kan annonsera (berätta om) nätverk som routern faktiskt känner till. 
 
-**Question:** What directly connected networks are present in the Branch2 routing table?
+#### Identifiera direktanslutna nätverk
 
-**Answer:**
-- `172.20.48.0/21` - Local LAN network
-- `172.20.56.4/30` - WAN link to HQ
-- `172.20.56.8/30` - WAN link to Branch1
+Den första frågan du kan få är: **Vilka direktanslutna nätverk finns i Branch2:s routingtabell?**
 
-**How to verify:**
-```cisco
-Branch2# show ip route connected
-```
+Svaret är att Branch2 har tre nätverk:
+- **172.20.48.0/21** - Detta är det lokala LAN-nätverket där Branch2:s datorer är anslutna
+- **172.20.56.4/30** - Detta är WAN-länken (långdistansförbindelsen) mellan Branch2 och HQ
+- **172.20.56.8/30** - Detta är WAN-länken mellan Branch2 och Branch1
 
-### Step 2: Enable OSPF
+För att verifiera detta kan du använda kommandot `show ip route connected` på routern. Detta visar alla nätverk som routern har direkta fysiska anslutningar till.
 
-**Question:** What commands are required to enable OSPF and include the connected networks in the routing updates on Branch2?
+#### Aktivera OSPF och annonsera nätverk
 
-**Answer:**
+Nu kommer själva konfigurationen. Du behöver aktivera OSPF-processen och tala om för routern vilka nätverk den ska annonsera till sina grannar. Här är kommandona:
+
 ```cisco
 Branch2(config)# router ospf 1
 Branch2(config-router)# network 172.20.48.0 0.0.7.255 area 0
@@ -73,285 +47,238 @@ Branch2(config-router)# network 172.20.56.4 0.0.0.3 area 0
 Branch2(config-router)# network 172.20.56.8 0.0.0.3 area 0
 ```
 
-**Understanding Wildcard Masks:**
-- `0.0.7.255` matches `/21` network (2048 addresses)
-- `0.0.0.3` matches `/30` network (4 addresses)
-- Wildcard mask = inverse of subnet mask
+Låt oss bryta ner vad som händer här. Det första kommandot `router ospf 1` startar OSPF-processen med process-ID 1. Detta nummer är lokalt för routern och behöver inte matcha andra routrars OSPF process-ID, men det är god praxis att använda samma nummer överallt för konsekvens.
 
-**Why Process ID 1?**
-- The process ID (1) is locally significant
-- Must match on all routers in the same autonomous system for consistency
-- Can be any number from 1-65535
+De följande tre kommandona använder `network`-satsen för att tala om vilka nätverk som ska ingå i OSPF. Men vad är det för konstiga nummer efter nätverksadressen? Det kallas wildcard mask, och det är lite annorlunda än den vanliga subnätmasken du kanske är van vid.
 
-### Step 3: Configure Passive Interfaces
+**Förstå Wildcard Masks:**
 
-**Question:** Are there any router interfaces on Branch2 that do not need to have OSPF updates sent out?
+En wildcard mask är som en inverterad subnätmask. Istället för att säga "dessa bitar måste matcha", säger den "jag bryr mig inte om dessa bitar". 
+- En 0 i wildcard masken betyder "detta måste matcha exakt"
+- En 1 betyder "det spelar ingen roll vad denna bit är"
 
-**Answer:** Yes, **FastEthernet0/0** (the LAN interface facing end devices)
+För nätverket 172.20.48.0/21:
+- Subnätmasken är 255.255.248.0
+- Wildcard masken blir då 0.0.7.255
 
-**Reasoning:**
-- No other routers are connected to the LAN segment
-- Sending OSPF hellos wastes bandwidth and CPU
-- Reduces security risk by not advertising routing protocol
+För att förstå varför, tänk på det tredje oktetten: 248 i binärt är 11111000. När vi inverterar detta får vi 00000111, vilket är 7 i decimal. Fjärde oktetten är 0, vilket inverterat blir 11111111 = 255.
 
-**Question:** What command is used to disable OSPF updates on these interfaces?
+För de små /30 nätverken (som bara har 4 IP-adresser) blir wildcard masken 0.0.0.3, eftersom 252 inverterat blir 3.
 
-**Answer:**
+Alla dessa nätverk placeras i **area 0**. I OSPF är area 0 speciell – det är ryggradsarean som alla andra områden måste ansluta till. I denna labb använder vi bara area 0 eftersom nätverket är relativt litet.
+
+#### Konfigurera Passive Interface
+
+Nästa viktiga steg är att konfigurera så kallade "passive interfaces". Frågan du kan få är: **Finns det några interface på Branch2 som inte behöver skicka ut OSPF-uppdateringar?**
+
+Svaret är ja – **FastEthernet0/0**, vilket är gränssnittet som vetter mot det lokala nätverket där vanliga datorer sitter. 
+
+Varför ska vi inte skicka OSPF-meddelanden här? Jo, det finns inga andra routrar på detta nätverksegment, bara slutanvändares datorer. Dessa datorer kan inte och behöver inte ta emot OSPF hello-paket. Genom att göra interfacet "passivt" gör vi två saker:
+1. Vi slutar skicka ut onödiga OSPF-paket som slösar bandbredd och CPU
+2. Vi minskar säkerhetsrisken genom att inte exponera vår routing-protokoll information
+
+Kommandot för att göra detta är:
 ```cisco
 Branch2(config-router)# passive-interface fa0/0
 ```
 
-**Benefits of Passive Interfaces:**
-- Network is still advertised in OSPF
-- No hello packets are sent
-- Improved security and efficiency
+Det smarta med passive interface är att nätverket fortfarande annonseras i OSPF (andra routrar får veta att detta nätverk existerar), men inga OSPF hello-paket skickas ut på interfacet. Det är som att säga "jag berättar om detta nätverk, men jag letar inte efter OSPF-grannar här".
 
 ---
 
-## Task 10: Verify the Configurations
+## Task 10: Verifiera konfigurationerna
 
-### Connectivity Testing
+Nu när vi har konfigurerat OSPF på alla tre routrar, är det dags att verifiera att allt fungerar som det ska. Detta är en kritisk del eftersom det visar att du förstår vad som händer i nätverket, inte bara hur man skriver kommandon.
 
-#### Test 1: PC1 to PC2 Connectivity
+### Testa uppkoppling mellan datorer
 
-**Question:** From PC1, is it possible to ping PC2?
+#### Kan PC1 pinga PC2?
 
-**Answer:** **Yes**
+Svaret är **ja**, och här är varför det är intressant. PC1 sitter på Branch1:s LAN-nätverk (172.20.32.0/20) och PC2 sitter på HQ:s LAN-nätverk (172.20.0.0/19). Innan OSPF var konfigurerat skulle dessa datorer inte kunna kommunicera eftersom routrarna inte visste om varandras nätverk. Men nu när OSPF är aktiverat har routrarna utbytt information om sina nätverk, och Branch1 vet hur man når HQ:s nätverk och vice versa.
 
-**Why it works:**
-- PC1 is on Branch1's LAN (172.20.32.0/20)
-- PC2 is on HQ's LAN (172.20.0.0/19)
-- OSPF has exchanged routing information between Branch1 and HQ
-- Both routers know the path to each other's networks
+När du pingar från PC1 till PC2 händer följande:
+1. PC1 skickar paketet till sin default gateway (Branch1 routern)
+2. Branch1 tittar i sin routingtabell och ser en OSPF-route till 172.20.0.0/19 via 172.20.56.1 (HQ)
+3. Branch1 vidarebefordrar paketet till HQ
+4. HQ levererar paketet till PC2 på sitt lokala nätverk
 
-#### Test 2: PC1 to PC3 Connectivity
+#### Kan PC1 pinga PC3?
 
-**Question:** From PC1, is it possible to ping PC3?
+Även detta är **ja**, och detta är ett ännu bättre exempel på OSPF:s styrka. PC3 sitter på Branch2:s nätverk, och efter att vi konfigurerade OSPF på Branch2 kan nu alla tre routrar kommunicera med varandra. 
 
-**Answer:** **Yes**
+Det intressanta här är att det finns flera möjliga vägar från PC1 till PC3:
+- Direktvägen: Branch1 → Branch2
+- Alternativa vägen: Branch1 → HQ → Branch2
 
-**Why it works:**
-- PC1 is on Branch1's LAN
-- PC3 is on Branch2's LAN (172.20.48.0/21)
-- After configuring OSPF on Branch2, all three routers have full routing tables
-- Multiple paths exist (Branch1 can reach Branch2 directly or via HQ)
+OSPF väljer automatiskt den bästa vägen baserat på kostnad (bandbredd).
 
-### Branch1 Routing Table Analysis
+### Analysera routingtabeller
 
-**Question:** What OSPF routes are present in the routing table of the Branch1 router?
+Routingtabellen är hjärtat i varje router – den berättar för routern vart olika paket ska skickas. Låt oss titta på var och en av våra routrar.
 
-**Answer:**
-- `O 172.20.0.0/19 via 172.20.56.1` - HQ's LAN network
-- `O 172.20.48.0/21 via 172.20.56.10` - Branch2's LAN network
-- `O 172.20.56.4/30 via 172.20.56.1 and 172.20.56.10` - HQ-to-Branch2 WAN link (2 paths)
-- `O*E2 0.0.0.0/0 via 172.20.56.1` - Default route (External Type 2)
+#### Branch1:s routingtabell
 
-**Understanding Route Types:**
-- `O` - Intra-area OSPF route
-- `O*E2` - OSPF External Type 2 (default route from HQ)
+När du tittar på Branch1:s routingtabell ser du flera OSPF-routes markerade med **O**:
 
-**Question:** What is the gateway of last resort in the routing table of the Branch1 router?
+- **O 172.20.0.0/19 via 172.20.56.1** betyder att Branch1 lärt sig om HQ:s LAN-nätverk via OSPF, och nästa hopp för att nå det nätverket är 172.20.56.1 (HQ:s interface)
 
-**Answer:** `172.20.56.1` to network `0.0.0.0`
+- **O 172.20.48.0/21 via 172.20.56.10** visar att Branch2:s LAN-nätverk nås via den direkta länken till Branch2
 
-**What is Gateway of Last Resort?**
-- The default gateway used when no specific route matches
-- Used for Internet-bound traffic
-- Points to HQ router which has Internet connectivity
+- **O 172.20.56.4/30 via 172.20.56.1 och 172.20.56.10** är särskilt intressant. Detta är WAN-länken mellan HQ och Branch2, och Branch1 har lärt sig om den via två olika vägar. Detta kallas Equal Cost Multi-Path (ECMP) och innebär att OSPF kan lastbalansera trafik över båda vägarna.
 
-### HQ Routing Table Analysis
+- **O*E2 0.0.0.0/0 via 172.20.56.1** är en specialroute. Asterisken (*) betyder att detta är en kandidat för "gateway of last resort" (standardgateway). E2 betyder "External Type 2", vilket indikerar att denna route har importerats från utanför OSPF (i detta fall representerar den Internet-anslutningen).
 
-**Question:** What OSPF routes are present in the routing table of the HQ router?
+**Gateway of last resort** för Branch1 är 172.20.56.1. Detta betyder att om Branch1 får ett paket till en destination som den inte har en specifik route för (t.ex. en webbplats på Internet), så skickas paketet till HQ som har Internet-anslutningen.
 
-**Answer:**
-- `O 172.20.32.0/20 via 172.20.56.2` - Branch1's LAN network
-- `O 172.20.48.0/21 via 172.20.56.6` - Branch2's LAN network
-- `O 172.20.56.8/30 via 172.20.56.2 and 172.20.56.6` - Branch1-to-Branch2 WAN link (2 paths)
+#### HQ:s routingtabell
 
-**Question:** What is the gateway of last resort in the routing table of the HQ router?
+HQ är lite speciell eftersom den är Internet-gatewayen för hela företaget. Dess OSPF-routes inkluderar:
 
-**Answer:** `0.0.0.0` is **directly connected, Loopback1**
+- **O 172.20.32.0/20 via 172.20.56.2** - Branch1:s LAN
+- **O 172.20.48.0/21 via 172.20.56.6** - Branch2:s LAN  
+- **O 172.20.56.8/30 via 172.20.56.2 och 172.20.56.6** - Länken mellan Branch1 och Branch2, som HQ kan nå via båda brancher
 
-**Why different from branches?**
-- HQ is the Internet gateway
-- Loopback1 represents the Internet connection
-- HQ creates and advertises the default route to other routers
+HQ:s gateway of last resort är speciell: **0.0.0.0 is directly connected, Loopback1**. Detta betyder att HQ själv är ansluten till Internet (representerat av Loopback1). Det är HQ som skapar den default route som distribueras till de andra routrarna.
 
-### Branch2 Routing Table Analysis
+#### Branch2:s routingtabell
 
-**Question:** What OSPF routes are present in the routing table of the Branch2 router?
+Branch2:s routingtabell liknar Branch1:s:
 
-**Answer:**
-- `O 172.20.0.0/19 via 172.20.56.5` - HQ's LAN network
-- `O 172.20.32.0/20 via 172.20.56.9` - Branch1's LAN network
-- `O 172.20.56.0/30 via 172.20.56.5 and 172.20.56.9` - HQ-to-Branch1 WAN link (2 paths)
-- `O*E2 0.0.0.0/0 via 172.20.56.5` - Default route (External Type 2)
+- **O 172.20.0.0/19 via 172.20.56.5** - HQ:s LAN
+- **O 172.20.32.0/20 via 172.20.56.9** - Branch1:s LAN
+- **O 172.20.56.0/30 via 172.20.56.5 och 172.20.56.9** - Länken mellan HQ och Branch1
+- **O*E2 0.0.0.0/0 via 172.20.56.5** - Default route som pekar mot HQ
 
-**Question:** What is the gateway of last resort in the routing table of the Branch2 router?
-
-**Answer:** `172.20.56.5` to network `0.0.0.0`
-
-**Observation:** Both Branch1 and Branch2 use HQ as their default gateway for Internet access.
+Branch2:s gateway of last resort är 172.20.56.5 (HQ), precis som Branch1. Båda filialkontoren använder huvudkontoret som sin gateway till Internet.
 
 ---
 
-## Task 11: Reflection
+## Task 11: Reflektion och förståelse
 
-### Path Analysis
+Detta sista steget handlar om att verkligen förstå hur trafiken flödar genom nätverket och varför OSPF väljer de vägar den gör.
 
-**Question:** What are the hops in the route to PC3 (using tracert from PC1)?
+### Spåra vägen från PC1 till PC3
 
-**Answer:**
-1. `172.20.32.1` (Branch1 router)
-2. `172.20.56.10` (Branch2 router)
-3. `172.20.55.254` (PC3)
+Om du använder `tracert` (eller `traceroute`) från PC1 till PC3, ser du följande hopp:
 
-**Understanding the Path:**
-- PC1 sends packets to its default gateway (Branch1)
-- Branch1 forwards directly to Branch2 via the `172.20.56.8/30` link
-- Branch2 delivers to PC3 on its local LAN
+1. **172.20.32.1** - Detta är Branch1 routern (PC1:s default gateway)
+2. **172.20.56.10** - Detta är Branch2 routern
+3. **172.20.55.254** - Detta är PC3
 
-**Question:** Is this the least number of hops that can be used to reach PC3?
+Detta visar att paketet tar den direkta vägen från Branch1 till Branch2. Men varför?
 
-**Answer:** **Yes**
+### Varför den direkta vägen?
 
-**Why is this optimal?**
-- Direct link exists between Branch1 and Branch2
-- OSPF uses cost metric (based on bandwidth)
-- Direct path has lower cost than going through HQ
-- Alternative path: PC1 → Branch1 → HQ → Branch2 → PC3 (4 hops)
+OSPF använder inte bara antalet hopp som RIP (Routing Information Protocol) gör. Istället använder OSPF en kostnadsfunktion baserad på bandbredd. Formeln är:
 
-**Question:** If the answer is no, why is a path with more than the minimum amount of hops used?
+**Kostnad = 10^8 / Bandbredd i bps**
 
-**Answer:** **N/A** - This is the shortest path. The direct link between Branch1 and Branch2 is used.
+Den direkta länken mellan Branch1 och Branch2 har en viss kostnad, låt oss säga den är 100 (om det är en 100 Mbps-länk). Den alternativa vägen genom HQ skulle ha en kostnad på 200 (två länkar à 100 vardera). OSPF väljer alltid vägen med lägst totalkostnad.
 
-### OSPF Path Selection Criteria
+Detta är tre hopp (inklusive destination), vilket är det minsta möjliga. Alternativa vägen skulle vara:
+1. PC1 → Branch1
+2. Branch1 → HQ
+3. HQ → Branch2
+4. Branch2 → PC3
 
-OSPF selects the best path based on:
-1. **Cost** (primary metric) = 10^8 / Bandwidth in bps
-2. **Equal Cost Multi-Path (ECMP)** - Load balancing across equal-cost paths
-3. **Administrative Distance** - Used when comparing OSPF with other protocols
+Det skulle vara fyra hopp, vilket är mer än nödvändigt.
 
----
+### Vad händer om en länk går ner?
 
-## Key Takeaways
+Detta är en viktig fråga för muntlig examination. Om länken mellan Branch1 och Branch2 skulle gå ner, vad händer då?
 
-### OSPF Configuration Checklist
-✅ Enable OSPF process: `router ospf [process-id]`  
-✅ Advertise networks: `network [network] [wildcard-mask] area [area-id]`  
-✅ Configure passive interfaces on LAN segments  
-✅ Verify with: `show ip route`, `show ip ospf neighbor`, `show ip protocols`  
+OSPF upptäcker detta snabbt (inom sekunder) eftersom routrarna kontinuerligt skickar hello-paket till sina grannar. När Branch1 slutar få svar från Branch2 på den direkta länken, markeras grannskapet som nere. OSPF kör då om sin SPF-algoritm och hittar den alternativa vägen genom HQ. Trafiken börjar automatiskt gå:
 
-### Important Concepts
+PC1 → Branch1 → HQ → Branch2 → PC3
 
-1. **Wildcard Masks**
-   - Inverse of subnet mask
-   - 0 = must match, 1 = don't care
-   - Example: `/30` = `255.255.255.252` → wildcard `0.0.0.3`
-
-2. **Passive Interfaces**
-   - Stops OSPF hello packets on specified interfaces
-   - Network is still advertised
-   - Improves security and reduces overhead
-
-3. **Default Route Propagation**
-   - HQ originates default route with `default-information originate`
-   - Marked as `O*E2` in routing tables
-   - Provides Internet access to branch offices
-
-4. **Path Selection**
-   - OSPF always prefers lowest cost path
-   - Direct links typically have lower cost than multi-hop paths
-   - Cost can be manually adjusted with `ip ospf cost` command
-
-### Common Verification Commands
-
-```cisco
-show ip route                    # Display routing table
-show ip route ospf               # Display only OSPF routes
-show ip ospf interface           # OSPF interface details
-show ip ospf neighbor            # OSPF neighbor adjacencies
-show ip protocols                # Routing protocol status
-ping [destination]               # Test connectivity
-tracert [destination]            # Trace packet path
-```
+Denna process kallas **konvergens**, och OSPF är känd för att ha snabb konvergens jämfört med äldre protokoll som RIP.
 
 ---
 
-## Practice Questions
+## Viktiga koncept att kunna förklara muntligt
 
-### Question 1
-What would happen if you forgot to configure `passive-interface fa0/0` on Branch2?
+### 1. Vad är skillnaden mellan direkt anslutna nätverk och OSPF-lärd routes?
 
-**Answer:** OSPF would send hello packets on the LAN segment, wasting bandwidth and CPU. End devices would receive these packets but couldn't respond, creating unnecessary network traffic.
+Direkt anslutna nätverk (markerade med **C** i routingtabellen) är nätverk där routern har ett fysiskt interface. Routern vet om dessa nätverk "själv". OSPF-lärda routes (markerade med **O**) är nätverk som routern har fått veta om av andra routrar genom OSPF-protokollet.
 
----
+### 2. Varför använder vi passive interface?
 
-### Question 2
-If the link between Branch1 and Branch2 fails, what path would traffic from PC1 to PC3 take?
+Vi använder passive interface på LAN-segment där det inte finns några andra routrar. Detta sparar resurser (CPU och bandbredd) och förbättrar säkerheten genom att inte exponera routing-information till slutanvändare. Viktigt att komma ihåg är att nätverket fortfarande annonseras – vi slutar bara lyssna efter och skicka OSPF hello-paket.
 
-**Answer:** Traffic would reroute through HQ:
-1. PC1 → Branch1 (172.20.32.1)
-2. Branch1 → HQ (172.20.56.1)
-3. HQ → Branch2 (172.20.56.6)
-4. Branch2 → PC3 (172.20.55.254)
+### 3. Vad betyder "area 0"?
 
-OSPF would automatically converge to use this backup path.
+Area 0 är backbone-arean i OSPF. I större nätverk kan man ha flera areas (area 1, area 2, etc.) för att göra routing mer skalbart. Alla icke-backbone areas måste ansluta till area 0. I vår labb använder vi bara area 0 eftersom nätverket är litet.
 
----
+### 4. Varför ser vi ibland två vägar i routingtabellen?
 
-### Question 3
-Why does the wildcard mask for `172.20.48.0/21` equal `0.0.7.255`?
+Detta kallas Equal Cost Multi-Path (ECMP). Om OSPF hittar två eller flera vägar med exakt samma kostnad till samma destination, kommer routern att använda båda för lastbalansering. I vår labb ser vi detta för vissa WAN-länkar som kan nås via två olika vägar med samma totalkostnad.
 
-**Answer:**
-- Subnet mask: `255.255.248.0` (`11111111.11111111.11111000.00000000`)
-- Wildcard mask: `0.0.7.255` (`00000000.00000000.00000111.11111111`)
-- The third octet: `248` → binary `11111000`, inverse → `00000111` = `7`
-- The fourth octet: `0` → binary `00000000`, inverse → `11111111` = `255`
+### 5. Vad är skillnaden mellan O och O*E2?
+
+**O** är en vanlig intra-area OSPF-route (en route inom samma area). **O*E2** är en extern route som har importerats in i OSPF från någon annanstans. Asterisken (*) betyder att den är kandidat för default route. E2 betyder External Type 2, vilket innebär att kostnaden för denna route inte ökar när den propageras genom OSPF-nätverket (till skillnad från E1 som adderar intern OSPF-kostnad).
 
 ---
 
-### Question 4
-What is the difference between `O` and `O*E2` route codes?
+## Verifieringskommandon du bör känna till
 
-**Answer:**
-- `O` = OSPF intra-area route (learned from routers in the same area)
-- `O*E2` = OSPF External Type 2 route (redistributed from outside OSPF, like a default route)
-- The `*` indicates it's a candidate default route (gateway of last resort)
+När du förklarar hur du verifierade din konfiguration, kan du referera till dessa kommandon:
 
----
+**`show ip route`** - Visar hela routingtabellen. Här ser du alla routes markerade med bokstavskoder (C för connected, O för OSPF, etc.)
 
-### Question 5
-How would you verify OSPF neighbor relationships on Branch2?
+**`show ip route ospf`** - Visar bara OSPF-lärda routes, vilket gör det lättare att se vad OSPF har bidragit med.
 
-**Answer:**
-```cisco
-Branch2# show ip ospf neighbor
-```
-You should see two neighbors:
-- HQ router (via 172.20.56.5)
-- Branch1 router (via 172.20.56.9)
+**`show ip ospf neighbor`** - Visar alla OSPF-grannar. Detta är viktigt för att verifiera att OSPF-adjacencies har bildats korrekt. Du bör se status FULL för varje granne, vilket betyder att routrarna har utbytt all routing-information.
 
-Both should show state `FULL/DR` or `FULL/BDR` (or `FULL/-` on point-to-point links).
+**`show ip ospf interface`** - Visar detaljer om varje interface som kör OSPF, inklusive om det är passive eller inte, area det tillhör, och kostnad.
+
+**`show ip protocols`** - Visar vilka routing-protokoll som är aktiva och vilka nätverk de annonserar.
+
+**`ping [destination]`** - Testar uppkoppling till en destination. Ett lyckat ping betyder att det finns en fungerande route i båda riktningarna (fram och tillbaka).
+
+**`tracert [destination]`** - Visar hela vägen ett paket tar från källa till destination, hopp för hopp. Mycket användbart för att förstå path selection.
 
 ---
 
-## Summary
+## Sammanfattning för muntlig redovisning
 
-This lab demonstrates:
-- ✅ OSPF configuration on multiple routers
-- ✅ Network advertisement using wildcard masks
-- ✅ Passive interface configuration
-- ✅ Routing table verification
-- ✅ Path selection and optimization
-- ✅ Default route propagation
+När du ska redovisa denna labb muntligt, tänk på att strukturera ditt svar ungefär så här:
 
-**Next Steps:**
-- Practice configuring OSPF in Packet Tracer or GNS3
-- Experiment with route summarization
-- Learn about OSPF areas and their benefits
-- Study OSPF authentication for enhanced security
+**Inledning:** Förklara kortfattat vad OSPF är och varför vi använder det. Nämn att det är ett link-state protokoll som använder Dijkstras algoritm och kostnad baserat på bandbredd.
+
+**Din konfiguration:** Beskriv hur du konfigurerade OSPF på Branch2. Förklara varför du valde de specifika network-satserna (vilka nätverk som skulle annonseras) och varför du satte FastEthernet0/0 som passive interface.
+
+**Verifiering:** Gå igenom hur du verifierade att konfigurationen fungerade. Nämn ping-tester mellan PC:ar och hur du analyserade routingtabellerna på alla tre routrar.
+
+**Reflektion:** Diskutera hur OSPF valde optimal path mellan Branch1 och Branch2 (direkt länk istället för via HQ) och vad som skulle hända om den länken gick ner.
+
+**OSPF:s fördelar:** Avsluta med att nämna några av OSPF:s styrkor jämfört med enklare protokoll som RIP: snabb konvergens, skalbarhet, bättre path selection baserat på bandbredd istället för bara hopp, och support för hierarkisk design med areas.
 
 ---
 
-**Good luck with your studies!** 🎓
+## Vanliga frågor vid muntlig examination
+
+**F: Vad händer om du glömmer att konfigurera passive-interface på fa0/0?**
+
+S: Routern skulle skicka OSPF hello-paket ut på LAN-segmentet, vilket slösar bandbredd och CPU-resurser. Slutanvändare skulle ta emot dessa paket men kunde inte svara på dem, vilket skapar onödig trafik. Det är inte katastrofalt, men det är dålig praxis.
+
+**F: Kan du förklara hur wildcard-masken 0.0.7.255 fungerar för ett /21-nätverk?**
+
+S: En /21-subnätmask är 255.255.248.0. För att få wildcard-masken inverterar vi varje bit. Det tredje oktetten är 248 i decimal, vilket är 11111000 i binärt. När vi inverterar får vi 00000111, vilket är 7. Fjärde oktetten är 0, vilket blir 255 när det inverteras. Därför blir wildcard-masken 0.0.7.255.
+
+**F: Varför har både Branch1 och Branch2 sina default routes pekande mot HQ?**
+
+S: HQ är Internet-gatewayen för hela företaget. Den har en fysisk anslutning till Internet (representerad av Loopback1 i labben). HQ skapar och distribuerar en default route till båda branch-routrarna så att all Internet-trafik går via HQ. Detta är en vanlig design där filialer inte har egna Internet-anslutningar utan tunnlar all extern trafik via huvudkontoret.
+
+**F: Vad är "process ID" i kommandot router ospf 1?**
+
+S: Process ID (i detta fall 1) är ett lokalt nummer för routern som används för att identifiera OSPF-processen. Det behöver inte matcha mellan olika routrar – två routrar kan ha olika process ID och fortfarande bilda OSPF-adjacency. Däremot måste de vara i samma area och ha matchande autentisering och timers. Det är dock god praxis att använda samma process ID överallt för konsekvens.
+
+**F: Hur vet routrarna vilken väg som är snabbast?**
+
+S: OSPF beräknar kostnad för varje länk baserat på formeln Cost = 10^8 / bandbredd. En 100 Mbps-länk får kostnad 1, en 10 Mbps-länk får kostnad 10, osv. OSPF summerar sedan kostnaden för hela vägen till varje destination och väljer vägen med lägst totalkostnad. Om två vägar har samma kostnad används båda för lastbalansering.
+
+---
+
+**Lycka till med din redovisning!** 🎓
+
+Kom ihåg att det viktigaste inte är att rabbla kommandon utantill, utan att visa att du förstår **varför** du gör det du gör och **vad** som händer i nätverket. Om du kan förklara koncepten med egna ord och svara på följdfrågor, visar det verklig förståelse.
