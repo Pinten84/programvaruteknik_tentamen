@@ -1,0 +1,32 @@
+# Sammanfattning av Tester för Boomerang Australia
+
+Detta dokument beskriver på ett enkelt sätt vad de automatiserade testerna i projektet kontrollerar. Testerna fungerar som en säkerhetskontroll för att garantera att spelets regler följs och att poängräkningen sker korrekt.
+
+## 1. Spelmekanik (GameTest)
+Dessa tester kontrollerar att själva "motorn" i spelet fungerar som den ska.
+
+*   **Starta spelet:** Testerna kontrollerar att man inte kan starta spelet med för få (1) eller för många (5) spelare. Spelet kräver 2-4 spelare.
+*   **Strategier:** Det kontrolleras att spelet vet vilka poängregler som gäller när det startas.
+*   **Hantera kort:**
+    *   **Korthand:** Tester för att se till att spelare kan ta upp kort på hand och kasta kort.
+    *   **Draft:** Kontrollerar att "drafting" (när man skickar runt kort) fungerar, d.v.s. att man kan välja ett kort att spara och skicka vidare resten.
+
+## 2. Poängräkning (ScoringTest)
+Här testas alla olika sätt man kan få poäng på i spelet för att se till att slutresultatet blir rätt.
+
+*   **Djur (Animals):**
+    *   Man får poäng för *par* av djur (t.ex. 2 Kängurur).
+    *   Enstaka djur ger inga poäng.
+    *   Har man flera par får man poäng för alla paren (t.ex. 4 Emuer ger poäng för 2 par).
+*   **Samlingar (Collections):**
+    *   Här samlar man på saker som löv, vildblommor, snäckor och souvenirer.
+    *   **Dubbling:** Om summan av värdena på korten är 7 eller mindre, dubblas poängen!
+    *   Om summan är över 7 får man bara den vanliga summan.
+*   **Aktiviteter (Activities):**
+    *   Man kan få poäng för aktiviteter som vandring, simning, m.m.
+    *   Testerna kollar att systemet vet vilka aktiviteter som finns tillgängliga baserat på korten.
+*   **Turistattraktioner (Tourist Sites):**
+    *   Varje besökt plats ger 1 poäng.
+    *   Systemet håller koll på vilka regioner man besökt.
+*   **Kasta och Fånga (Throw & Catch):**
+    *   Detta är specialkort. Testerna kollar att skillnaden mellan "Kasta"-kortet och "Fånga"-kortet räknas ut korrekt som poäng.
